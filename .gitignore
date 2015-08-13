@@ -1,0 +1,11 @@
+
+# tmp files created by makefile
+build
+
+# automatically generated annoying files
+*.pyc
+.DS_Store
+.ipynb_checkpoints
+
+# the html file created by folium
+map.html
