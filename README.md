@@ -15,14 +15,38 @@ Write your notebooks in a way that they are fun to read. Don't make any assumpti
 
 ## project layout
 
-* have a README file that gives someone new to the project all information that is necessary to start working
-  - explain purpose of the project
-  - where to find resources
-  - project setup (external dependencies, makefile, etc)
-* have all dependencies of a notebook specified in a requirements.txt file
-* use relative paths to load your data from (no /Users/horst/projects/mepris/data/bla.csv)
-* use a makefile to make data processing reproducable
-  - if you applied some transformations to your dataset, record them in a makefile (or something similar). If not you'll mostly have no idea how you got the data in this format a few month later
+
+### README
+
+The README file should give someone new on the project all information that is necessary to start working. Oftentimes the setup of a project is not well documented. It is very demotivating if time has to be invested just to get the current code running. Therefore a README file should contain the following information:
+
+* Explain the purpose of the project
+* Add links to further resources (Dropbox with data, Asana with tasks, Slack channel, etc)
+* *ALL* steps that are required to get the code running! (dependencies, configuration)
+
+
+### requirements.txt
+
+All python dependencies used in notebooks and modules should be kept in a [requirements.txt file](https://pip.pypa.io/en/latest/user_guide.html#requirements-files). This allows a user to install everything required by simply typing `pip install -r requirements.txt`.
+
+
+### Central configuration
+
+Configuration should be explicit and centralized. Avoid spreading configuration strings and values over several files. If settings are centralized they can be re-used from several notebooks and they are easy to be found. No complicated system is necessary for that, we often simply use a JSON file in the config folder (see example in styleguide.ipynb). Additionally manual settings should be avoided when possible. For example an explicit path that only works on a specific machine could be replaced by a relative path (`/Users/horst/projects/mepris/data/bla.csv` -> `data/bla.csv`).
+
+
+### Automated build system
+
+When working with external datasets we often have to execute several steps of processing before we can work with them. I just recently had a case, working with geodata, where I downloaded shapefiles, unzipped them, converted them to GeoJSON while filtering on a property and in the end, converted everything to TopoJSON. Already a day later I had no idea what all the steps were to create my dataset that I plotted. Then I remembered that Mike Bostock, the creator of D3, often uses Makefiles in his examples and even wrote [an article](http://bost.ocks.org/mike/make/) about why we should use them.
+
+* they automate the data processing workflow
+* and at the same time document what we did
+
+[Here](Makefile) is the example of a makefile I used to do all the steps described above. If I now want to recreate my dataset from scratch (even including the download), I just have to run make clean and make all. To try it out, just run `make all` in the root folder of this repository. Of course any other build system like [waf](https://waf.io/) or [rake](https://github.com/ruby/rake) are equally fine. I mention make for its simplicity and widespread usage.
+
+
+### Move code to modules
+
 * move larger chunks of code into a module and import it
   - this allows to share code between notebooks
   - the notebook should be used to communicate results, not its computation
