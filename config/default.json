@@ -1,0 +1,8 @@
+{
+    "acs_census": {
+        "_comment": "API key for census.gov (http://www.census.gov/developers/)",
+        "api_key": "5e6440035614f34c8996f94a88640849a2b436ed",
+        "root_url": "http://api.census.gov/data/2013/acs5",
+        "acs_variables_path": "data/acs5_variables.json"
+    }
+}
