@@ -45,56 +45,101 @@ When working with external datasets we often have to execute several steps of pr
 [Here](Makefile) is the example of a makefile I used to do all the steps described above. If I now want to recreate my dataset from scratch (even including the download), I just have to run make clean and make all. To try it out, just run `make all` in the root folder of this repository. Of course any other build system like [waf](https://waf.io/) or [rake](https://github.com/ruby/rake) are equally fine. I mention make for its simplicity and widespread usage.
 
 
-### Move code to modules
+### Use modules for larger chunks of code
 
-* move larger chunks of code into a module and import it
-  - this allows to share code between notebooks
-  - the notebook should be used to communicate results, not its computation
-  - makes the notebook more readable
-* no unnecessary code and outdated notebooks
+Notebooks are an excellent tool to communicate results and their computation. However when they contain too much code, they quickly become unreadable. We often saw that people forget all the normal practices of writing good code, like encapsulation and separation of concerns, when they write notebooks. Verbose, repetitive code has a negative impact on the readability of notebooks. Simply moving code into a function and giving it a descriptive name makes notebooks much more pleasent to read. Move these functions into normal python modules and import them in the beginning of your notebook. This additionally has the big advantage that code can be shared between different notebooks and automated tests can be written for these functions.
+
+TODO: add example
 
 
-## style and formatting
+### Clean codebase
 
-* write pythonic and pandastic code
-  - use iterators instead of indexes
-  - use context managers
-  - use pandas in a pandastic way (column level operations, group, map, filter)
-* code style
-  - generally follow pep8, people are used to read python code in this style
-  - don't be too strict, notebooks are different
-  - we don't suggest the hard 80 chars from pep8, but something in this range
-  - move code with multiple levels of indentation into a helper module
-  - it should be immediately clear what your code does
-* markdown cells
-  - add a markdown cell instead of a code cell with comments (nice formatting, links, etc)
-  - use print statements only for data dependent text
-* avoid unnecessary output
-  - assign to _ in order to avoid unnecessary output (hist example)
-  - limit the length of output when you want to show a few exemplary rows of a table (e.g.: df.head(20) instead of the first 50 rows)
-  - don't commit notebooks that contain warnings or errors. When I open a notebook that contains a warning I start questioning the correctness of the results.
-* import and configuration cell
-  - no `import numpy as np` in your `~/.ipython/profile_default/startup/` folder (this guarantees that notebooks work on all machines, or at least fail explicitly in the imports section)
-  - library initializations and configuration also into the initial cell
-  - set constants in this cell (a path or URL that someone who uses your notebook might have to change)
-* remove unused code!
-  - unused imports
-  - outdated code, cells, analysis
-  - if code is for some reason commented out but you have a good reason to keep it, you should explicitly state this reason in the comment.
+In one sentence: delete all unnecesarry and unused code! This might sound self-evident, but we saw many notebooks with old code that was commented out. Or imports that were not used anymore. Some cells that compute something, but the result is not used anymore. This is very confusing for a reader of your notebook. I always feel unconfident changing a notebook when there is code where its use is not immediately evident to me. Just delete it! When code is commented out and has to be kept for some reason, clearly state that reason in the comment.
+
+Also delete all notebooks that are not used anymore. I recently spent quite some time understanding and using a notebook, just to find later that its functionality got replaced by a new one with a slightly different name. If one notebook replaces another and the old one is note used anymore, delete it. If two notebooks do almost the same, merge them. Be reasonable with the organization of your codebooks. They not only have to be readable by itself, they should also be consistent if a project contains a collection of notebooks.
 
 
-## storytelling
+### Testing
 
-* use text to guide your reader through the notebook
-  - explain in the beginning of a notebook what it is about
-  - add a conclusion to the end of the notebook
-  - explain all plots and results (in the moment you wrote the notebook it is probably clear what you were asking. But a month later not and for other people not at all)
-  - always ask a question, write the code to answer it AND comment on the results
-* start with some basic statistics to give the reader a feeling for the dataset
-* use images or even video in your notebooks
+TODO: add small section that re-used code in modules should be tested and suggest a helper to run all notebooks to guarantee that they work in a fresh kernel
 
 
-## testing
+## Style and formatting
 
-* make sure that all your notebooks work in a fresh kernel
+
+### Idiomatic code
+
+Use Python in a way that people are used to read. Practice to write code in a *pythonic* way. And the same applies for pandas. Use it in a pandastic way.
+
+* use iterators instead of indexes
+* use context managers
+
+TODO: add examples
+
+
+### Code style
+
+We generally suggest to follow the recommendations of PEP8. Thats what the community agreed on and thats what most people are used to read. However you should not be too strict or dogmatic with the application of this styleguide. Some of its rules don't make sense in notebooks. You don't always have to break a line at 8 characters. Still try to limit the length, a line like
+
+TODO: add example ``
+
+is not very readable. And when your line space become to small because you are at the 5th level of indentation, consider moving this code into a module. The most important thing is that it should be immediately clear what your code does. No magical long lines that apply ten different operations in one row, no cryptical variable names, no magic numbers.
+
+
+### Markdown cells
+
+Notebooks are an implementation of the idea of [literate programming](TODO: add link). The beauty of it is that you can mix code and text. Make use of it. Interweave your code cells me nicely formatted markdown cells. You can even use links, images or videos in it! As a general rule, if you want to display text that does not depend on computed values, use nice looking markdown cells.
+
+Bad:
+```
+  print("First five customers")
+  customers.head()
+```
+
+The text could also be in a markdown cell. Only use print statements for variable text like:
+
+```
+  print("The number of customers is {}".format(len(customers)))
+```
+
+
+
+### avoid unnecessary output
+
+Notebooks become hard to read when they are cluttered with output from cells. You should only show whats necessary to make your point. Pandas for example shows by default the first 50 rows of a DataFrame. But is that always necessary? If you just want to give an idea of how the data looks like, `df.head()` might be enough. Or if have a dataset with 40 columns, but only want to show that the name column contains numerical values, use `df['name'].head()` instead of the whole DataFrame. Some operations produce warning message. Take care of them, most of them appear for a reason. I immediately start questioning the validity of result if there are warning messages in a notebook. If you checked that the warning messages really does not affect the correctness of your analysis, add a comment to the line producing the warning. Don't display unecessary return values, rather assign them to the anonymous variable `_`. For example many plotting functions return values that you don't need but clutter the output of your cell. Write `_ = df.hist()` in such cases.
+
+
+### Import and configuration cell
+
+Start your notebooks with one import and configuration cell. When the reader of your notebook wonders where a certain constant or function comes from, she can always jump back to this cell in the beginning. Make sure that all imports are explicitely mentioned. It is tempting to have some standard imports like `import numpy as np` in your `~/.ipython/profile_default/startup/` folder, but is annoying for people who want to run your notebook and don't have the exactly same configuration file. By having all imports explicitly it guarantees to work on all machines, or at least fail explicitly in the imports section. In this cell you should:
+
+* explicitely import all libraries you use
+* initialize connections or configure libraries
+* define constants
+
+TODO: add link to example notebook
+
+
+## Storytelling
+
+
+### Introduction
+
+The last two chapters are mostly prerequisites for the main usage of a notebook, to tell a story and communicate results. And this is also why a notebook should be more than a sequence of code cells and their output. You should use well written, concise text to guide your read (which can always be your future self) through the analysis. Start each notebook with a short introduction that gives some context and explains the purpose of the analysis. Sometimes this has to be a text of several paragraphs of background information, sometimes this is only a sentence like: "This notebook investigates the relationship between petal length and species of Iris flowers". This introduction should be followed by some basic statistics. Whats the size of your dataset, how many missing values does it have per column or whats the distribution of the main value you are interested in.
+
+
+### Main analysis
+
+To allow the reader to follow your thoughts you had when creating the notebook you should always repeat the three following steps during your main analysis.
+
+1. Ask a question
+2. Compute the answer in the form of numbers or a graph
+3. Comment on the answer, state your interpretation
+
+This might feel stupid in the beginning as the question and the interpretation of your results are clearly present in your mind. But you always have to consider that this does not mean that they are present to your reader.
+
+
+### Conclusion
+
+In the beginning of your notebook you introduced its topic and stated the main question it is supposed to answer. The conclusion in the end should give an answer to this question, or the reason why it wasn't possible to find an answer to it. This allows a reader who is not interested in all the technical details to skip the whole analysis section and still get valuable information out of the notebook. And it helps you to focus on answering a question. The analysis is always only a means to answer a question. But always adding a conclusion you guarantee that you don't loose the focus of the question you initially asked.
 
