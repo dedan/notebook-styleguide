@@ -9,3 +9,6 @@ build
 
 # the html file created by folium
 map.html
+
+# misc
+todo.md
